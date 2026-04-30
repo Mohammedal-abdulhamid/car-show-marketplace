@@ -321,3 +321,45 @@ exports.uploadCarImages = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+/* =========================================================
+   GET FILTER OPTIONS (DYNAMIC FROM DB)
+========================================================= */
+exports.getFilters = async (req, res) => {
+  try {
+    const query = `
+      SELECT 
+        array_agg(DISTINCT make) FILTER (WHERE make IS NOT NULL) AS makes,
+
+        json_agg(DISTINCT jsonb_build_object(
+          'make', make,
+          'model', model
+        )) FILTER (WHERE model IS NOT NULL) AS models,
+
+        array_agg(DISTINCT fuel_type) FILTER (WHERE fuel_type IS NOT NULL) AS fuel_types,
+        array_agg(DISTINCT transmission) FILTER (WHERE transmission IS NOT NULL) AS transmissions,
+
+        array_agg(DISTINCT year ORDER BY year DESC) FILTER (WHERE year IS NOT NULL) AS years,
+
+        array_agg(DISTINCT price ORDER BY price ASC) FILTER (WHERE price IS NOT NULL) AS prices,
+
+        array_agg(DISTINCT mileage ORDER BY mileage ASC) FILTER (WHERE mileage IS NOT NULL) AS mileages
+
+      FROM cars;
+    `;
+
+    const result = await pool.query(query);
+
+    res.json({
+      makes: result.rows[0].makes || [],
+      models: result.rows[0].models || [],
+      fuelTypes: result.rows[0].fuel_types || [],
+      transmissions: result.rows[0].transmissions || [],
+      years: result.rows[0].years || [],
+      prices: result.rows[0].prices || [],
+      mileages: result.rows[0].mileages || [],
+    });
+
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};

@@ -1,9 +1,12 @@
 const express = require("express");
 const router = express.Router();
 
+
+
 const carController = require("../controllers/carController");
 const auth = require("../middleware/authMiddleware");
 const requireAdmin = require("../middleware/requireAdmin");
+
 const upload = require("../middleware/upload");
 // PUBLIC
 router.get("/", carController.getCars);
@@ -14,5 +17,7 @@ router.get("/:id", carController.getCarById);
 router.post("/", auth, requireAdmin, carController.createCar);
 router.put("/:id", auth, requireAdmin, carController.updateCar);
 router.delete("/:id", auth, requireAdmin, carController.deleteCar);
+
+router.get("/filters", carController.getFilters);
 
 module.exports = router;
